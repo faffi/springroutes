@@ -152,7 +152,7 @@ public class ClassParser
 				}
 
 				//This is ghetto but cant figure out another way...
-				String sig = md.getBody().getParent().toString().split("\n")[0].replace("{","");
+				//String sig = md.getBody().getParent().toString().split("\n")[0].replace("{","");
 				mc.addMethod(mm);
 				final List<SingleVariableDeclaration> parameters = md.parameters();
 				//Code below is commented out but works? used for parsing the method arguments and looking at their annotations

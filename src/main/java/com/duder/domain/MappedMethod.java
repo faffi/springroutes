@@ -101,13 +101,9 @@ public class MappedMethod
 				if (mma.getAnnotationParms().containsKey("value"))
 				{
 					String ret = mma.getAnnotationParms().get("value").replace("\"",""); //Gotta replace the quotes like for the controller ;)
-					if (ret.startsWith("{"))
+					if (ret.startsWith("{") && ret.endsWith("}") && ret.split(",").length > 1)  //Make sure it starts and ends with curly braces, comma denotes multiple values
 					{
-						ret = ret.substring(1,ret.length());
-						if (ret.endsWith("}"))
-						{
-							ret = ret.substring(0,ret.length()-1);
-						}
+						ret = ret.substring(1,ret.length()-1);
 					}
 					//This breaks when the requestMapping value is an array
 					//TODO: Fix case where request mapping holds an array of values

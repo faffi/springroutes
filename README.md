@@ -44,8 +44,8 @@ Please file any bugs you find, the code isn't exactly the cleanest, but it works
 		[GET]            /data/param                     			                                                                                                                                
 		[GET]            /data/group                     			                                                                                                                                
 		[GET]            /data/path/{var}                			                                                                                                                                
-		[GET]            /data/path}/simple              			                                                                                                                                
-		[GET]            /data/path1}/{path2             			                                                                                                                                
+		[GET]            /data/{path}/simple              			                                                                                                                                
+		[GET]            /data/{path1}/{path2}             			                                                                                                                                
 		[GET]            /data/header                    			                                                                                                                                
 		[GET]            /data/cookie                    			                                                                                                                                
 		[POST]           /data/body                      			                                                                                                                                
