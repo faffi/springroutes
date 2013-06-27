@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="testID" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <value>
+                /welcome.htm=welcomeController
+                /*/welcome.htm=welcomeController
+                /helloGuest.htm=helloGuestController
+            </value>
+        </property>
+    </bean>
+
+    <bean id="welcomeController"
+          class="com.test.WelcomeController" />
+
+    <bean id="helloGuestController"
+          class="com.test.HelloGuestController" />
+
+</beans>
