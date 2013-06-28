@@ -101,7 +101,7 @@ public class MappedMethod
 				if (mma.getAnnotationParms().containsKey("value"))
 				{
 					String ret = mma.getAnnotationParms().get("value").replace("\"",""); //Gotta replace the quotes like for the controller ;)
-					if (ret.startsWith("{") && ret.endsWith("}") && ret.split(",").length > 1)  //Make sure it starts and ends with curly braces, comma denotes multiple values
+					if (ret.startsWith("{") && ret.endsWith("}") && ret.split(",").length > 1)  //Make sure it starts and ends with curly braces, comma denotes array
 					{
 						ret = ret.substring(1,ret.length()-1);
 					}

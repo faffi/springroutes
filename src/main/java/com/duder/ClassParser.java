@@ -35,14 +35,12 @@ public class ClassParser
 		final MappedClass mc = new MappedClass();
 
 		List<AbstractTypeDeclaration> types = cu.types();
-		//final PackageDeclaration pd = (PackageDeclaration) Iterables.filter(cu.types(), ASTNodeTypePredicate.create(ASTNode.PACKAGE_DECLARATION));
-		//System.out.println(pd.getName());
+
 
 		//Find the class declaration
 		final AbstractTypeDeclaration td = Iterables.find(types,ASTNodeTypePredicate.create(ASTNode.TYPE_DECLARATION),null);
 		if (td == null)
 		{
-			//System.err.println("Failed to find class declaration: " +cu.toString());
 			return null;
 		}
 		mc.setName(td.getName().toString());
@@ -52,11 +50,6 @@ public class ClassParser
 			@Override
 			public boolean apply(ASTNode o)
 			{
-				//System.out.println("Examining node type: " + o.getNodeType());
-/*				if (o.getNodeType() == ASTNode.MARKER_ANNOTATION)
-				{
-					MarkerAnnotation mad = ((MarkerAnnotation)o);
-				}*/
 				return o.getNodeType() == ASTNode.MARKER_ANNOTATION &&
 						((MarkerAnnotation) o).getTypeName().toString().equals("Controller");
 			}
@@ -65,7 +58,6 @@ public class ClassParser
 		//Make sure we want this class, all relevant classes will have the @Controller annotation
 		if (controllerAnnotation == null)
 		{
-			//System.out.println("No controller annotation identified: " + mc.getName());
 			return null;
 		}
 		final SingleMemberAnnotation classReqMappingAnnotation = (SingleMemberAnnotation) Iterables.find(td.modifiers(), new Predicate<ASTNode>()
@@ -83,8 +75,6 @@ public class ClassParser
 		{
 			//TODO: make sure this doesn't bork if the RequestMapping holds an array
 			mc.setControllerRequestMapping(classReqMappingAnnotation.getValue().toString().replace("\"", "")); //Returns "/findings" with the quotes
-			//System.out.println("Failed to find annotation on object: " + mc.getName());
-			//return;
 		}
 
 		//Filter all method declarations based off node type and transform to a list of body declarations
@@ -97,27 +87,11 @@ public class ClassParser
 			}
 		}));
 
-		//Remove it if it doesnt have a RequestMapping modifier
-
+		//Remove it if it doesn't have a RequestMapping modifier
 		for (final MethodDeclaration md : mds)
 		{
 
 			final MappedMethod mm = new MappedMethod(md.getName().toString());
-/*			for (final IExtendedModifier aa : (List<IExtendedModifier>)md.modifiers())
-			{
-				if (aa instanceof SingleMemberAnnotation)
-				{
-					System.out.println("SMA: " + ((SingleMemberAnnotation)aa).getValue());
-				}
-				else if (aa instanceof MarkerAnnotation)
-				{
-					System.out.println("Marker: " + ((MarkerAnnotation)aa).getTypeName().toString());
-				}
-				else if (aa instanceof NormalAnnotation)
-				{
-					System.out.println("NA : " + ((NormalAnnotation)aa).);
-				}
-			}*/
 			final IExtendedModifier requestMapping = (IExtendedModifier) Iterables.find(md.modifiers(), new Predicate<IExtendedModifier>()
 			{
 				@Override
@@ -130,7 +104,6 @@ public class ClassParser
 			}, null);
 			if (null != requestMapping) //method is a request mapping
 			{
-				//System.out.println("Found " + requestMapping);
 				if (requestMapping instanceof NormalAnnotation)
 				{
 					final NormalAnnotation na = (NormalAnnotation) requestMapping;
@@ -150,47 +123,8 @@ public class ClassParser
 					final MappedMethodAnnotation mma = new MappedMethodAnnotation(sma.getTypeName().toString(), new HashMap<String,String>(){{ put("value",sma.getValue().toString()); }});
 					mm.addAnnotation(mma);  //Node that this is currently the only annotation being added to the list.
 				}
-
-				//This is ghetto but cant figure out another way...
-				//String sig = md.getBody().getParent().toString().split("\n")[0].replace("{","");
 				mc.addMethod(mm);
-				final List<SingleVariableDeclaration> parameters = md.parameters();
-				//Code below is commented out but works? used for parsing the method arguments and looking at their annotations
-/*				for (final SingleVariableDeclaration var : parameters)
-				{
-					//mm.setSignature(String.format("%s(%s)", md.getName().toString(), var.toString()));
-					//System.out.println(var.getType());
-					//final MappedMethodParameter mmp = new MappedMethodParameter(var.getName().toString(), var.getType().toString(), null);
-/*					System.out.println("Var Name: " + var.getName().toString());    //Variable Name
-					System.out.println("Var Type: " + var.getType());               //Object Type*/
-					//I dont feel like writing this, seems just as useful to store the entire signature with these in them and dump that.
-					/*for (final IExtendedModifier mod : (List<IExtendedModifier>)var.modifiers())
-					{
-						if (mod instanceof MarkerAnnotation)
-						{
-							final MarkerAnnotation vma = ((MarkerAnnotation)mod);
-							final MappedMethodParameterAnnotation mmpa = new MappedMethodParameterAnnotation(vma.getTypeName().toString());
-							System.out.println("Mod: " + vma.getTypeName());
-
-						}
-						else if (mod instanceof NormalAnnotation)
-						{
-							final NormalAnnotation vna = (NormalAnnotation)mod;
-							final MappedMethodParameterAnnotation mmpa = new MappedMethodParameterAnnotation(vna.getTypeName().toString());
-							for (final MemberValuePair mvp : (List<MemberValuePair>)vna.values())
-							{
-								//System.out.println(mvp.getName().toString() + " vals: " + mvp.getValue().toString());
-								mmpa.addAnnotationValue(mvp.getName().toString(),mvp.getValue().toString());
-							}
-							//System.out.println("Mod: " + vna.getTypeName() + " " + Arrays.asList(vna.values()));
-						}
-						System.out.println(mod.getClass());
-					}
-				}*/
-
 			}
-			//mods: [@RequestMapping(value="/export/{templateId}/download",method=RequestMethod.GET), public]
-			//parms: [@PathVariable String templateId, HttpServletResponse res]
 		}
 		return mc;
 	}
@@ -217,27 +151,3 @@ public class ClassParser
 		return fileData.toString();
 	}
 }
-
-
-/* Just saving some code :)
-				for (ASTNode aaa : (List<ASTNode>) type.modifiers())
-				{
-					if (aaa.getNodeType() == ASTNode.MARKER_ANNOTATION)                 //returns @Controller - single annotations
-					{
-						MarkerAnnotation ma = (MarkerAnnotation) aaa;
-						System.out.println("Market Annotation: " + ma.getTypeName());   //Returns 'Controller' as it should ;)
-					}
-					else if (aaa.getNodeType() == ASTNode.SINGLE_MEMBER_ANNOTATION)     //Returns annotations with a single value - RequestMapping=("/findings")
-					{
-
-						SingleMemberAnnotation sma = (SingleMemberAnnotation) aaa;
-						//System.out.println("Single Member Annotation: " + sma.getTypeName());
-						//System.out.println("Single Member Annotation Value: " + sma.getValue());
-					}
-					else if (aaa.getNodeType() == ASTNode.MODIFIER)                     //Returns public
-					{
-						//System.out.println(((Modifier)aaa).getKeyword());
-					}
-					//System.out.println("node type on constructor: " + aaa.getNodeType());
-				}
-*/
