@@ -136,3 +136,4 @@ Please file any bugs you find, the code isn't exactly the cleanest, but it works
 		[GET]            /views/*/pathVariables/{foo}/{fruit}pathVariables                                                                                                                                
 		[GET]            /views/*/dataBinding/{foo}/{fruit}dataBinding                                                                                                                                
 
+
