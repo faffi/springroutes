@@ -4,8 +4,12 @@
 *.jar
 *.war
 *.ear
+.project
+.classpath
 target
 old/
 *.iml
+.settings/
 .idea/
 test/
+spring-mvc-showcase/

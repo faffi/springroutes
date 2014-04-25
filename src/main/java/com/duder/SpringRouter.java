@@ -52,6 +52,7 @@ public class SpringRouter
 				catch (Exception e)
 				{
 					printe("Failed to read file: " + f.getName());
+					e.printStackTrace();
 				}
 			}
 			for (final MappedClass mc : mappedClassList)

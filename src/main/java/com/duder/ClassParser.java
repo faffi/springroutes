@@ -1,22 +1,21 @@
 package com.duder;
 
-import com.duder.domain.*;
+import com.duder.domain.MappedClass;
+import com.duder.domain.MappedMethod;
+import com.duder.domain.MappedMethodAnnotation;
 import com.duder.helpers.ASTNodeTypePredicate;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.eclipse.jdt.core.dom.*;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ClassParser
 {
@@ -60,21 +59,65 @@ public class ClassParser
 		{
 			return null;
 		}
-		final SingleMemberAnnotation classReqMappingAnnotation = (SingleMemberAnnotation) Iterables.find(td.modifiers(), new Predicate<ASTNode>()
+
+		final Annotation classReqMappingAnnotation = (Annotation) Iterables.find(td.modifiers(), new Predicate<ASTNode>()
 		{
 			@Override
 			public boolean apply(ASTNode astNode)
 			{
+				switch (astNode.getNodeType())
+				{
+					case ASTNode.SINGLE_MEMBER_ANNOTATION:
+					{
+						//Found @RequestMapping("/asdf")
+						return ((SingleMemberAnnotation) astNode).getTypeName().toString().equals("RequestMapping");
+					}
+					case ASTNode.NORMAL_ANNOTATION:
+					{
+						final NormalAnnotation na = (NormalAnnotation) astNode;
+						if (na.getTypeName().toString().equals("RequestMapping"))
+						{
+							for (final MemberValuePair p : (List<MemberValuePair>) na.values())
+							{
+								if (p.getName().toString().equals("value"))    //Found @RequestMapping(value = "/asdf")
+									return true;
+							}
+						}
+						break;
+					}
+				}
+				return false;
 				//************** CONTROLLERS WILL NOT ALWAYS HAVE A RequestMapping ANNOTATION ********
-				return astNode.getNodeType() == ASTNode.SINGLE_MEMBER_ANNOTATION
-						&& ((SingleMemberAnnotation) astNode).getTypeName().toString().equals("RequestMapping");
+				/*return (astNode.getNodeType() == ASTNode.SINGLE_MEMBER_ANNOTATION && ((SingleMemberAnnotation) astNode).getTypeName().toString().equals("RequestMapping"))
+						||astNode.getNodeType() == ASTNode.NORMAL_ANNOTATION && ((NormalAnnotation) astNode).values();*/
 			}
 		}, null);
 
+		//We found a class that has the @RequestMapping annotation
 		if (classReqMappingAnnotation != null)
 		{
+			String reqMapAnnot = "";
 			//TODO: make sure this doesn't bork if the RequestMapping holds an array
-			mc.setControllerRequestMapping(classReqMappingAnnotation.getValue().toString().replace("\"", "")); //Returns "/findings" with the quotes
+			if (classReqMappingAnnotation.getNodeType() == ASTNode.SINGLE_MEMBER_ANNOTATION)
+			{
+				reqMapAnnot = ((SingleMemberAnnotation) classReqMappingAnnotation).getValue().toString();
+			}
+			else if (classReqMappingAnnotation.getNodeType() == ASTNode.NORMAL_ANNOTATION)
+			{
+				final NormalAnnotation na = (NormalAnnotation) classReqMappingAnnotation;
+				final List<MemberValuePair> annotationPairs = na.values();
+				final MemberValuePair mvp = Iterables.find(annotationPairs , new Predicate<MemberValuePair>()
+				{
+					@Override
+					public boolean apply(MemberValuePair memberValuePair)
+					{
+						return memberValuePair.getName().toString().equals("value");
+					}
+				});
+				reqMapAnnot = mvp.getValue().toString();
+			}
+			mc.setControllerRequestMapping(reqMapAnnot.replace("\"",""));
+			//mc.setControllerRequestMapping(classReqMappingAnnotation.getValue().toString().replace("\"", "")); //Returns "/findings" with the quotes
 		}
 
 		//Filter all method declarations based off node type and transform to a list of body declarations
